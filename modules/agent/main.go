@@ -22,7 +22,18 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/agent/g"
 	"github.com/open-falcon/falcon-plus/modules/agent/http"
 	"os"
+	"github.com/rakyll/ticktock"
+	"github.com/rakyll/ticktock/t"
 )
+
+type PrintJob struct {
+	Msg string
+}
+
+func (j *PrintJob) Run() error {
+	fmt.Println(j.Msg)
+	return nil
+}
 
 func main() {
 
@@ -58,11 +69,15 @@ func main() {
 
 	go cron.InitDataHistory()
 
+	ticktock.Start()
+
 	cron.ReportAgentStatus()
 	cron.SyncMinePlugins()
+	cron.SyncUserDefinedMetrics()
 	cron.SyncBuiltinMetrics()
 	cron.SyncTrustableIps()
 	cron.Collect()
+	ticktock.Schedule("test", &PrintJob{Msg: "Hello world"}, &t.When{Every: t.Every(1).Minutes()})
 
 	go http.Start()
 

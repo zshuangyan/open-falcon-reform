@@ -36,6 +36,25 @@ func (t *Agent) MinePlugins(args model.AgentHeartbeatRequest, reply *model.Agent
 	return nil
 }
 
+type UserDefinedMetricsResponse struct {
+	Metrics   []*cache.UserDefinedMetric
+}
+
+func (t *Agent) UserDefinedMetrics(args model.AgentHeartbeatRequest, reply *UserDefinedMetricsResponse) error {
+	if args.Hostname == "" {
+		return nil
+	}
+
+	metrics, err := cache.GetUserDefinedMetrics(args.Hostname)
+	if err != nil {
+		return nil
+	}
+
+	reply.Metrics = metrics
+
+	return nil
+}
+
 func (t *Agent) ReportStatus(args *model.AgentReportRequest, reply *model.SimpleRpcResponse) error {
 	if args.Hostname == "" {
 		reply.Code = 1
