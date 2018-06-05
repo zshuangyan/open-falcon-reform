@@ -15,15 +15,15 @@
 package db
 
 import (
+	"github.com/open-falcon/falcon-plus/common/model"
 	"fmt"
 	"log"
-	"github.com/open-falcon/falcon-plus/modules/hbs/cache"
 )
 
-func QueryUserDefinedMetrics(hid int) ([]*cache.UserDefinedMetric, error) {
-	var m []*cache.UserDefinedMetric
+func QueryUserDefinedMetrics(hid int) ([]*model.UserDefinedMetric, error) {
+	var m []*model.UserDefinedMetric
 
-	sql := fmt.Sprint("select id, metric_name, command from user_defined_metrics where host_id='%s' and status=0", hid)
+	sql := fmt.Sprintf("select id, metric_name, command from user_defined_metrics where host_id=%v and status=0", hid)
 	rows, err := DB.Query(sql)
 	if err != nil {
 		log.Println("ERROR:", err)
@@ -44,9 +44,9 @@ func QueryUserDefinedMetrics(hid int) ([]*cache.UserDefinedMetric, error) {
 			continue
 		}
 
-		m = append(m, &cache.UserDefinedMetric{metric_name, command})
+		m = append(m, &model.UserDefinedMetric{metric_name, command})
 
-		update_sql := fmt.Sprint("update user_defined_metrics set status=1 where id='%s'", id)
+		update_sql := fmt.Sprintf("update user_defined_metrics set status=1 where id=%v", id)
 		_, err := DB.Query(update_sql)
 		if err != nil {
 			log.Println("ERROR:", err)
@@ -55,4 +55,3 @@ func QueryUserDefinedMetrics(hid int) ([]*cache.UserDefinedMetric, error) {
 
 	return m, nil
 }
-

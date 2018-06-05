@@ -16,15 +16,12 @@ package cache
 
 import (
 	"github.com/open-falcon/falcon-plus/modules/hbs/db"
+	"github.com/open-falcon/falcon-plus/common/model"
 )
 
-type UserDefinedMetric struct {
-	metric_name  string
-	command      string
-}
 
-func GetUserDefinedMetrics(hostname string) ([]*UserDefinedMetric, error) {
-	ret := []*UserDefinedMetric{}
+func GetUserDefinedMetrics(hostname string) ([]*model.UserDefinedMetric, error) {
+	ret := []*model.UserDefinedMetric{}
 	hid, exists := HostMap.GetID(hostname)
 	if !exists {
 		return ret, nil

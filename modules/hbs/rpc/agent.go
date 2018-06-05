@@ -36,11 +36,8 @@ func (t *Agent) MinePlugins(args model.AgentHeartbeatRequest, reply *model.Agent
 	return nil
 }
 
-type UserDefinedMetricsResponse struct {
-	Metrics   []*cache.UserDefinedMetric
-}
 
-func (t *Agent) UserDefinedMetrics(args model.AgentHeartbeatRequest, reply *UserDefinedMetricsResponse) error {
+func (t *Agent) UserDefinedMetrics(args model.AgentHeartbeatRequest, reply *model.UserDefinedMetricsResponse) error {
 	if args.Hostname == "" {
 		return nil
 	}

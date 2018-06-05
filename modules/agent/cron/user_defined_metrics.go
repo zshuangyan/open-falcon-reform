@@ -19,12 +19,8 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/agent/g"
 	"log"
 	"time"
-	"github.com/open-falcon/falcon-plus/modules/hbs/cache"
 )
 
-type UserDefinedMetricResponse struct {
-	Metrics   []*cache.UserDefinedMetric
-}
 
 func SyncUserDefinedMetrics() {
 	if !g.Config().Heartbeat.Enabled {
@@ -54,7 +50,7 @@ func syncUserDefinedMetrics() {
 			Hostname: hostname,
 		}
 
-		var resp UserDefinedMetricResponse
+		var resp model.UserDefinedMetricsResponse
 		err = g.HbsClient.Call("Agent.UserDefinedMetrics", req, &resp)
 		if err != nil {
 			log.Println("ERROR:", err)
