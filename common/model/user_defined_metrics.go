@@ -1,10 +1,14 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type UserDefinedMetric struct {
-	Metric_Name  string
-	Command      string
+	Name      string
+	Command   string
+	Step      int64
+	MetricType string
 }
 
 type UserDefinedMetricsResponse struct {
@@ -12,16 +16,13 @@ type UserDefinedMetricsResponse struct {
 }
 
 func (this *UserDefinedMetric) String() string {
-	return fmt.Sprintf(
-		"%s/%s",
-		this.Metric_Name,
-		this.Command,
-	)
+	return fmt.Sprintf( "<Metric: %v, Command: %v, Step: %v, Type: %v>",
+		this.Name, this.Command, this.Step, this.MetricType)
 }
 
 func (this *UserDefinedMetricsResponse) String() string {
 	return fmt.Sprintf(
-		"<Metrics:%v>",
+		"Metrics:%v",
 		this.Metrics,
 	)
 }

@@ -23,7 +23,7 @@ import (
 func QueryUserDefinedMetrics(hid int) ([]*model.UserDefinedMetric, error) {
 	var m []*model.UserDefinedMetric
 
-	sql := fmt.Sprintf("select id, metric_name, command from user_defined_metrics where host_id=%v and status=0", hid)
+	sql := fmt.Sprintf("select id, name, command, step, metric_type from user_defined_metric where host_id=%v and status=0", hid)
 	rows, err := DB.Query(sql)
 	if err != nil {
 		log.Println("ERROR:", err)
@@ -34,20 +34,22 @@ func QueryUserDefinedMetrics(hid int) ([]*model.UserDefinedMetric, error) {
 	for rows.Next() {
 		var (
 			id int
-			metric_name  string
+			name  string
 			command string
+			step int64
+			metric_type string
 		)
 
-		err = rows.Scan(&id, &metric_name, &command)
+		err = rows.Scan(&id, &name, &command, &step, &metric_type)
 		if err != nil {
 			log.Println("ERROR:", err)
 			continue
 		}
 
-		m = append(m, &model.UserDefinedMetric{metric_name, command})
+		m = append(m, &model.UserDefinedMetric{name, command, step, metric_type})
 
-		update_sql := fmt.Sprintf("update user_defined_metrics set status=1 where id=%v", id)
-		_, err := DB.Query(update_sql)
+		updateSql := fmt.Sprintf("update user_defined_metric set status=1 where id=%v", id)
+		_, err := DB.Query(updateSql)
 		if err != nil {
 			log.Println("ERROR:", err)
 		}

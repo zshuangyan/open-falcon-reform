@@ -23,7 +23,6 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/agent/http"
 	"os"
 	"github.com/rakyll/ticktock"
-	"github.com/rakyll/ticktock/t"
 )
 
 type PrintJob struct {
@@ -77,7 +76,6 @@ func main() {
 	cron.SyncBuiltinMetrics()
 	cron.SyncTrustableIps()
 	cron.Collect()
-	ticktock.Schedule("test", &PrintJob{Msg: "Hello world"}, &t.When{Every: t.Every(1).Minutes()})
 
 	go http.Start()
 
