@@ -150,4 +150,3 @@ make clean all pack
 
 - Any issue or question is welcome, Please feel free to open [github issues](https://github.com/open-falcon/falcon-plus/issues) :)
 - [FAQ](https://book.open-falcon.org/zh_0_2/faq/)
-
