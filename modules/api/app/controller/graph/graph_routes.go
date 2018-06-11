@@ -18,7 +18,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/open-falcon/falcon-plus/modules/api/app/utils"
 	"github.com/open-falcon/falcon-plus/modules/api/config"
 )
 
@@ -30,7 +29,7 @@ const expecstatus = http.StatusExpectationFailed
 func Routes(r *gin.Engine) {
 	db = config.Con()
 	authapi := r.Group("/api/v1")
-	authapi.Use(utils.AuthSessionMidd)
+	//authapi.Use(utils.AuthSessionMidd)
 	authapi.GET("/graph/endpointobj", EndpointObjGet)
 	authapi.GET("/graph/endpoint", EndpointRegexpQuery)
 	authapi.GET("/graph/endpoint_counter", EndpointCounterRegexpQuery)

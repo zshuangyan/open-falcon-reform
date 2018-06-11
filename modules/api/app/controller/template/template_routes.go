@@ -18,7 +18,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/open-falcon/falcon-plus/modules/api/app/utils"
 	"github.com/open-falcon/falcon-plus/modules/api/config"
 )
 
@@ -29,7 +28,7 @@ const badstatus = http.StatusBadRequest
 func Routes(r *gin.Engine) {
 	db = config.Con()
 	tmpr := r.Group("/api/v1/template")
-	tmpr.Use(utils.AuthSessionMidd)
+	//tmpr.Use(utils.AuthSessionMidd)
 	tmpr.GET("", GetTemplates)
 	tmpr.POST("", CreateTemplate)
 	tmpr.GET("/:tpl_id", GetATemplate)
@@ -44,6 +43,6 @@ func Routes(r *gin.Engine) {
 
 	//simple list for ajax use
 	tmpr2 := r.Group("/api/v1/template_simple")
-	tmpr.Use(utils.AuthSessionMidd)
+	//tmpr.Use(utils.AuthSessionMidd)
 	tmpr2.GET("", GetTemplatesSimple)
 }

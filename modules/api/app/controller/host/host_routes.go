@@ -18,7 +18,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/open-falcon/falcon-plus/modules/api/app/utils"
 	"github.com/open-falcon/falcon-plus/modules/api/config"
 )
 
@@ -30,8 +29,9 @@ const expecstatus = http.StatusExpectationFailed
 func Routes(r *gin.Engine) {
 	db = config.Con()
 	hostr := r.Group("/api/v1")
-	hostr.Use(utils.AuthSessionMidd)
+	//hostr.Use(utils.AuthSessionMidd)
 	//hostgroup
+	hostr.GET("/host", GetHosts)
 	hostr.GET("/hostgroup", GetHostGroups)
 	hostr.POST("/hostgroup", CrateHostGroup)
 	hostr.POST("/hostgroup/host", BindHostToHostGroup)

@@ -23,7 +23,60 @@ import (
 	h "github.com/open-falcon/falcon-plus/modules/api/app/helper"
 	f "github.com/open-falcon/falcon-plus/modules/api/app/model/falcon_portal"
 	u "github.com/open-falcon/falcon-plus/modules/api/app/utils"
+	"github.com/jinzhu/gorm"
+	"net/http"
+	"strings"
 )
+
+type APIHostRegexpQueryInputs struct {
+	Q     string `json:"q" form:"q"`
+	Limit int    `json:"limit" form:"limit"`
+	Page  int    `json:"page" form:"page"`
+}
+
+
+func GetHosts(c *gin.Context){
+	inputs := APIHostRegexpQueryInputs{
+		//set default is 500
+		Limit: 500,
+		Page:  1,
+	}
+	if err := c.Bind(&inputs); err != nil {
+		h.JSONR(c, badstatus, err)
+		return
+	}
+
+	qs := []string{}
+	if inputs.Q != "" {
+		qs = strings.Split(inputs.Q, " ")
+	}
+
+	var offset int = 0
+	if inputs.Page > 1 {
+		offset = (inputs.Page - 1) * inputs.Limit
+	}
+
+	var host []f.Host
+	var dt *gorm.DB
+	dt = db.Falcon.Table("host").Select("id, hostname")
+	if len(qs) != 0 {
+		for _, trem := range qs {
+			dt = dt.Where(" hostname regexp ? ", strings.TrimSpace(trem))
+		}
+	}
+	dt.Limit(inputs.Limit).Offset(offset).Scan(&host)
+	if dt.Error != nil {
+		h.JSONR(c, http.StatusBadRequest, dt.Error)
+		return
+	}
+
+	hosts := []map[string]interface{}{}
+	for _, host := range host {
+		hosts = append(hosts, map[string]interface{}{"id": host.ID, "name": host.Hostname})
+	}
+
+	h.JSONR(c, hosts)
+}
 
 func GetHostBindToWhichHostGroup(c *gin.Context) {
 	HostIdTmp := c.Params.ByName("host_id")

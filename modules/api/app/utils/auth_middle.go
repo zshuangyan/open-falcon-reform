@@ -14,15 +14,9 @@
 
 package utils
 
-import (
-	"net/http"
+import "github.com/gin-gonic/gin"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/gin-gonic/gin"
-	h "github.com/open-falcon/falcon-plus/modules/api/app/helper"
-	"github.com/spf13/viper"
-)
-
+/*
 func AuthSessionMidd(c *gin.Context) {
 	auth, err := h.SessionChecking(c)
 	if !viper.GetBool("skip_auth") {
@@ -36,6 +30,7 @@ func AuthSessionMidd(c *gin.Context) {
 	}
 	c.Set("auth", auth)
 }
+*/
 
 func CORS() gin.HandlerFunc {
 	return func(context *gin.Context) {

@@ -18,7 +18,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/open-falcon/falcon-plus/modules/api/app/utils"
 	"github.com/open-falcon/falcon-plus/modules/api/config"
 )
 
@@ -30,7 +29,7 @@ const expecstatus = http.StatusExpectationFailed
 func Routes(r *gin.Engine) {
 	db = config.Con()
 	mogr := r.Group("/api/v1/nodata")
-	mogr.Use(utils.AuthSessionMidd)
+	//mogr.Use(utils.AuthSessionMidd)
 	mogr.GET("", GetNoDataList)
 	mogr.GET("/:nid", GetNoData)
 	mogr.POST("/", CreateNoData)

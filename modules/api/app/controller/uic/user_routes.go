@@ -18,7 +18,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/open-falcon/falcon-plus/modules/api/app/utils"
 	"github.com/open-falcon/falcon-plus/modules/api/config"
 )
 
@@ -37,7 +36,7 @@ func Routes(r *gin.Engine) {
 	//user modify
 	u.POST("/create", CreateUser)
 	authapi := r.Group("/api/v1/user")
-	authapi.Use(utils.AuthSessionMidd)
+	//authapi.Use(utils.AuthSessionMidd)
 	authapi.GET("/current", UserInfo)
 	authapi.GET("/u/:uid", GetUser)
 	authapi.GET("/name/:user_name", GetUserByName)
@@ -47,7 +46,7 @@ func Routes(r *gin.Engine) {
 	authapi.GET("/u/:uid/in_teams", IsUserInTeams)
 	authapi.GET("/u/:uid/teams", GetUserTeams)
 	adminapi := r.Group("/api/v1/admin")
-	adminapi.Use(utils.AuthSessionMidd)
+	//adminapi.Use(utils.AuthSessionMidd)
 	adminapi.PUT("/change_user_role", ChangeRoleOfUser)
 	adminapi.PUT("/change_user_passwd", AdminChangePassword)
 	adminapi.PUT("/change_user_profile", AdminChangeUserProfile)
@@ -55,7 +54,7 @@ func Routes(r *gin.Engine) {
 
 	//team
 	authapi_team := r.Group("/api/v1")
-	authapi_team.Use(utils.AuthSessionMidd)
+	//authapi_team.Use(utils.AuthSessionMidd)
 	authapi_team.GET("/team", Teams)
 	authapi_team.GET("/team/t/:team_id", GetTeam)
 	authapi_team.GET("/team/name/:team_name", GetTeamByName)
