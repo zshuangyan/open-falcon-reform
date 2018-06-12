@@ -29,6 +29,7 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/api/app/controller/template"
 	"github.com/open-falcon/falcon-plus/modules/api/app/controller/uic"
 	"github.com/open-falcon/falcon-plus/modules/api/app/utils"
+	"github.com/open-falcon/falcon-plus/modules/api/app/controller/metric"
 )
 
 func StartGin(port string, r *gin.Engine) {
@@ -37,6 +38,7 @@ func StartGin(port string, r *gin.Engine) {
 		c.String(http.StatusOK, "Hello, I'm Falcon+ (｡A｡)")
 	})
 	graph.Routes(r)
+	metric.Routes(r)
 	uic.Routes(r)
 	template.Routes(r)
 	strategy.Routes(r)
