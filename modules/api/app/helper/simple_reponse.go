@@ -75,3 +75,34 @@ func JSONR(c *gin.Context, arg ...interface{}) (werror error) {
 	}
 	return
 }
+
+type RespWithData struct {
+	ErrorCode int  `json:"error_code"`
+	ErrorMsg  string  `json:"error_msg"`
+	Data      interface{}  `json:"data"`
+}
+
+type RespNoData struct {
+	ErrorCode int  `json:"error_code"`
+	ErrorMsg  string  `json:"error_msg"`
+}
+
+func JSONResponse(c *gin.Context, wcode int, ecode int, msg interface{}, data ...interface{}) (werror error) {
+	var body interface{}
+	var message string
+	switch msg.(type){
+	case string:
+		message = msg.(string)
+	case error:
+		message = msg.(error).Error()
+	default:
+		message = "system type error. please ask admin for help"
+	}
+	if data != nil {
+		body = RespWithData{ecode, message, data[0]}
+	} else {
+		body = RespNoData{ecode, message}
+	}
+	c.JSON(wcode, body)
+	return
+}

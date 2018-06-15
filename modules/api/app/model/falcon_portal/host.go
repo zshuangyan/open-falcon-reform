@@ -35,13 +35,13 @@ import (
 // +----------------+------------------+------+-----+-------------------+-----------------------------+
 
 type Host struct {
-	ID            int64  `json:"id" gorm:"column:id"`
-	Hostname      string `json:"hostname" gorm:"column:hostname"`
-	Ip            string `json:"ip" gorm:"column:ip"`
+	ID            int64  `json:"id"             gorm:"column:id"`
+	Hostname      string `json:"hostname"       gorm:"column:hostname"`
+	IP            string `json:"ip"             gorm:"column:ip"`
 	AgentVersion  string `json:"agent_version"  gorm:"column:agent_version"`
-	PluginVersion string `json:"plugin_version"  gorm:"column:plugin_version"`
-	MaintainBegin int64  `json:"maintain_begin"  gorm:"column:maintain_begin"`
-	MaintainEnd   int64  `json:"maintain_end"  gorm:"column:maintain_end"`
+	PluginVersion string `json:"plugin_version" gorm:"column:plugin_version"`
+	MaintainBegin int64  `json:"maintain_begin" gorm:"column:maintain_begin"`
+	MaintainEnd   int64  `json:"maintain_end"   gorm:"column:maintain_end"`
 }
 
 func (this Host) TableName() string {

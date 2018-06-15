@@ -26,6 +26,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type APIHostRegexpQueryInputs struct {
@@ -41,8 +42,9 @@ func GetHosts(c *gin.Context){
 		Limit: 500,
 		Page:  1,
 	}
+	ecode := -1
 	if err := c.Bind(&inputs); err != nil {
-		h.JSONR(c, badstatus, err)
+		h.JSONResponse(c, badstatus, ecode, err)
 		return
 	}
 
@@ -61,21 +63,23 @@ func GetHosts(c *gin.Context){
 	dt = db.Falcon.Table("host").Select("id, hostname")
 	if len(qs) != 0 {
 		for _, trem := range qs {
-			dt = dt.Where(" hostname regexp ? ", strings.TrimSpace(trem))
+			dt = dt.Where(" hostname regexp ? ", ".*" + strings.TrimSpace(trem) +".*")
 		}
 	}
 	dt.Limit(inputs.Limit).Offset(offset).Scan(&host)
 	if dt.Error != nil {
-		h.JSONR(c, http.StatusBadRequest, dt.Error)
+		h.JSONResponse(c, http.StatusBadRequest, ecode, dt.Error)
 		return
 	}
 
 	hosts := []map[string]interface{}{}
 	for _, host := range host {
-		hosts = append(hosts, map[string]interface{}{"id": host.ID, "name": host.Hostname})
+		hosts = append(hosts, map[string]interface{}{"id": host.ID, "name": host.Hostname, "ip": host.IP, "status": 1,
+		"updated": time.Now().Format("2006-01-02 15:04:05")})
 	}
 
-	h.JSONR(c, hosts)
+	h.JSONResponse(c, http.StatusOK, 0, "get hosts succeed", hosts)
+	return
 }
 
 func GetHostBindToWhichHostGroup(c *gin.Context) {

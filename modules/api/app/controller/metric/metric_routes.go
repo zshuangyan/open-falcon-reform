@@ -27,7 +27,15 @@ const expecstatus = http.StatusExpectationFailed
 
 func Routes(r *gin.Engine) {
 	db = config.Con()
-	authapi := r.Group("/api/v1")
-	authapi.GET("/metric", GetMetrics)
-
+	metricr := r.Group("/api/v1")
+	metricr.GET("/metric", GetMetrics)
+	metricr.POST("/metric", CreateMetric)
+	metricr.DELETE("/metric/:metric_id", DeleteMetric)
+	metricr.GET("/metric/alias", GetMetricNameAndAlia)
+	metricr.POST("/namespace", CreateNameSpace)
+	metricr.GET("/namespace", GetNameSpaces)
+	metricr.DELETE("/namespace/:namespace_id", DeleteNameSpace)
+	metricr.POST("bind/metric-host", BindMetricToHosts)
+	metricr.POST("unbind/metric-host", UnBindMetricToHosts)
+	metricr.POST("relation/metric-host", GetMetricBindHosts)
 }
