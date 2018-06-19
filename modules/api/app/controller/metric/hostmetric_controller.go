@@ -34,7 +34,7 @@ func BindMetricToHosts(c *gin.Context) {
 			errors = append(errors, fmt.Sprintf("host: %v not exist\n", host_id))
 		} else {
 			if dt := db.Falcon.Create(&f.HostMetric{MetricID: metric.ID, HostID: ahost.ID}); dt.Error != nil {
-				errors = append(errors, fmt.Sprintf("host: %v not exist\n", host_id))
+				errors = append(errors, fmt.Sprintf("bound to host: %v failed for reason: %s\n", host_id, dt.Error.Error()))
 			}
 		}
 	}
@@ -89,8 +89,11 @@ func UnBindMetricToHosts(c *gin.Context) {
 }
 
 type APIMetricBindHosts struct {
-	MetricID int64 `json:"metric_id" binding:"required"`
-	Bind bool  `json:"bind"`
+	MetricID int64  `json:"metric_id" form:"metric_id" binding:"required"`
+	Bind     bool   `json:"bind" form:"bind" binding:"required"`
+	Q        string `json:"q" form:"q"`
+	Limit    int    `json:"limit" form:"limit"`
+	Page     int    `json:"page" form:"page"`
 }
 
 type HostIDAndName struct {
@@ -99,7 +102,10 @@ type HostIDAndName struct {
 }
 
 func GetMetricBindHosts(c *gin.Context){
-	var inputs APIMetricBindHosts
+	inputs := APIMetricBindHosts{
+		Limit: 50,
+		Page:  1,
+	}
 	ecode := -1
 	if err := c.Bind(&inputs); err != nil {
 		h.JSONResponse(c, badstatus, ecode, err)
@@ -111,20 +117,24 @@ func GetMetricBindHosts(c *gin.Context){
 		return
 	}
 	var hosts []HostIDAndName
+	sql := "SELECT host.id, host.hostname FROM host WHERE host.id %s IN (SELECT host_id FROM host_metric WHERE host_metric.metric_id = %v)"
 	if inputs.Bind  {
-		if dt := db.Falcon.Raw(fmt.Sprintf("select host.id, host.hostname from host where host.id in (select " +
-			"host_id from host_metric where host_metric.metric_id = %v)", metric.ID)).Scan(&hosts); dt.Error != nil {
-			h.JSONResponse(c, expecstatus, ecode, dt.Error)
-			return
-		}
+		sql = fmt.Sprintf(sql, "", metric.ID)
 	} else {
-		if dt := db.Falcon.Raw(fmt.Sprintf("select host.id, host.hostname from host where host.id not in (select " +
-			"host_id from host_metric where host_metric.metric_id = %v)", metric.ID)).Scan(&hosts); dt.Error != nil {
-			h.JSONResponse(c, expecstatus, ecode, dt.Error)
-			return
-		}
+		sql = fmt.Sprintf(sql, "NOT", metric.ID)
 	}
-
-	h.JSONResponse(c, http.StatusOK, 0, "get hosts succeed", hosts)
+	if inputs.Q != ""{
+		sql += " AND host.hostname REGEXP " + "'.*" + inputs.Q + ".*'"
+	}
+	var offset = 0
+	if inputs.Page > 1 {
+		offset = (inputs.Page - 1) * inputs.Limit
+	}
+	sql += fmt.Sprintf(" LIMIT %v OFFSET %v", inputs.Limit, offset)
+	if dt := db.Falcon.Raw(sql).Scan(&hosts); dt.Error != nil {
+		h.JSONResponse(c, expecstatus, ecode, dt.Error)
+		return
+	}
+	h.JSONResponse(c, http.StatusOK, 0, fmt.Sprintf("succeed get hosts bound to metric:%v", metric.ID), hosts)
 	return
 }

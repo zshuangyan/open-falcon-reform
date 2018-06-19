@@ -37,5 +37,5 @@ func Routes(r *gin.Engine) {
 	metricr.DELETE("/namespace/:namespace_id", DeleteNameSpace)
 	metricr.POST("bind/metric-host", BindMetricToHosts)
 	metricr.POST("unbind/metric-host", UnBindMetricToHosts)
-	metricr.POST("relation/metric-host", GetMetricBindHosts)
+	metricr.GET("relation/metric-host", GetMetricBindHosts)
 }

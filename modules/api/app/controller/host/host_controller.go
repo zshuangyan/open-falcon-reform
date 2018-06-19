@@ -30,21 +30,28 @@ import (
 )
 
 type APIHostRegexpQueryInputs struct {
-	Q     string `json:"q" form:"q"`
-	Limit int    `json:"limit" form:"limit"`
-	Page  int    `json:"page" form:"page"`
+	Q        string `json:"q" form:"q"`
+	Status   int   `json:"status" form:"status"`
+	Limit    int    `json:"limit" form:"limit"`
+	Page     int    `json:"page" form:"page"`
 }
 
 
 func GetHosts(c *gin.Context){
 	inputs := APIHostRegexpQueryInputs{
 		//set default is 500
+		Status: 1,
 		Limit: 500,
 		Page:  1,
 	}
 	ecode := -1
 	if err := c.Bind(&inputs); err != nil {
 		h.JSONResponse(c, badstatus, ecode, err)
+		return
+	}
+
+	if inputs.Status == 0 {
+		h.JSONResponse(c, http.StatusOK, 0, "get hosts succeed", []map[string]interface{}{})
 		return
 	}
 
