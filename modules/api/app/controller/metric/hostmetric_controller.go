@@ -96,6 +96,7 @@ func UnBindMetricToHosts(c *gin.Context) {
 type APIMetricBindHosts struct {
 	MetricID int64  `json:"metric_id" form:"metric_id" binding:"required"`
 	Bind     bool   `json:"bind" form:"bind"`
+	Status   int    `json:"status" form:"status"`
 	Q        string `json:"q" form:"q"`
 	Limit    int    `json:"limit" form:"limit"`
 	Page     int    `json:"page" form:"page"`
@@ -109,6 +110,7 @@ type HostIDAndName struct {
 func GetMetricBindHosts(c *gin.Context){
 	hbInterval := 5
 	inputs := APIMetricBindHosts{
+		Status: 2,
 		Limit: 50,
 		Page:  1,
 	}
@@ -122,15 +124,20 @@ func GetMetricBindHosts(c *gin.Context){
 		h.JSONResponse(c, expecstatus, ecode, dt.Error)
 		return
 	}
-	sql := fmt.Sprintf("SELECT host.id, host.hostname, host.ip, CASE WHEN TIMESTAMPDIFF(minute, host.hb_at, NOW()) < %v THEN 1 ELSE 0 END AS status", hbInterval)
-	sql += " FROM host WHERE host.id %s IN (SELECT host_id FROM host_metric WHERE host_metric.metric_id = %v)"
+	sql := "SELECT host.id, host.hostname, host.ip, date_format(hb_at, '%Y-%m-%d %T') as updated, " +
+		fmt.Sprintf("CASE WHEN TIMESTAMPDIFF(minute, host.hb_at, NOW()) < %v THEN 1 ELSE 0 END AS status", hbInterval)
 	if inputs.Bind {
-		sql = fmt.Sprintf(sql, "", metric.ID)
+		sql += fmt.Sprintf(" FROM host WHERE host.id %s IN (SELECT host_id FROM host_metric WHERE host_metric.metric_id = %v)", "", metric.ID)
 	} else {
-		sql = fmt.Sprintf(sql, "NOT", metric.ID)
+		sql += fmt.Sprintf(" FROM host WHERE host.id %s IN (SELECT host_id FROM host_metric WHERE host_metric.metric_id = %v)", "NOT", metric.ID)
 	}
 	if inputs.Q != ""{
 		sql += " AND host.hostname REGEXP " + "'.*" + inputs.Q + ".*'"
+	}
+	if inputs.Status == 0 {
+		sql += " AND " + fmt.Sprintf("TIMESTAMPDIFF(minute, host.hb_at, NOW()) > %v", hbInterval)
+	} else if inputs.Status == 1 {
+		sql += " AND " + fmt.Sprintf("TIMESTAMPDIFF(minute, host.hb_at, NOW()) <= %v", hbInterval)
 	}
 	var offset = 0
 	if inputs.Page > 1 {

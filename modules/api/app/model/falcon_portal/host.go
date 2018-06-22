@@ -25,6 +25,7 @@ type Host struct {
 	ID            int64  `json:"id"             gorm:"column:id"`
 	Hostname      string `json:"hostname"       gorm:"column:hostname"`
 	IP            string `json:"ip"             gorm:"column:ip"`
+	Updated       string `json:"updated"        gorm:"column:updated"`
 	Status        int    `json:"status"         gorm:"column:status"`
 }
 

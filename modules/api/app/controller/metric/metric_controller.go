@@ -169,3 +169,20 @@ func DeleteMetric(c *gin.Context) {
 	h.JSONResponse(c, http.StatusOK, 0, fmt.Sprintf("metric: %v has been deleted", MetricID))
 	return
 }
+
+func CheckMetricName(c *gin.Context) {
+	MetricName := c.Params.ByName("metric_name")
+	ecode := -1
+	if MetricName == "" {
+		h.JSONResponse(c, badstatus, ecode, "metric name is missing")
+		return
+	}
+	var exist bool
+	dt := db.Falcon.Raw(fmt.Sprintf("SELECT EXISTS(SELECT name FROM metric WHERE NAME=%s)", MetricName)).Scan(&exist)
+	if dt.Error != nil {
+		h.JSONResponse(c, expecstatus, ecode, dt.Error)
+		return
+	}
+	h.JSONResponse(c, http.StatusOK, 0, "get result succeed", exist)
+
+}

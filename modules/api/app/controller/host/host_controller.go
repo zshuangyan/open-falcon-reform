@@ -39,9 +39,8 @@ type APIHostRegexpQueryInputs struct {
 func GetHosts(c *gin.Context){
 	hbInterval := 5
 	inputs := APIHostRegexpQueryInputs{
-		//set default is 500
 		Status: 2,
-		Limit: 500,
+		Limit: 50,
 		Page:  1,
 	}
 	ecode := -1
@@ -66,8 +65,9 @@ func GetHosts(c *gin.Context){
 	}
 
 	var dt *gorm.DB
-	select_sql := fmt.Sprintf("id, hostname, ip, CASE WHEN TIMESTAMPDIFF(minute, hb_at, NOW()) < %v THEN 1 ELSE 0 END AS status", hbInterval)
-	dt = db.Falcon.Table("host").Select(select_sql)
+	selectSql := "id, hostname, ip, date_format(hb_at, '%Y-%m-%d %T') as updated, " +
+		fmt.Sprintf("CASE WHEN TIMESTAMPDIFF(minute, hb_at, NOW()) < %v THEN 1 ELSE 0 END AS status", hbInterval)
+	dt = db.Falcon.Table("host").Select(selectSql)
 	if len(qs) != 0 {
 		for _, trem := range qs {
 			dt = dt.Where(" hostname regexp ? ", ".*" + strings.TrimSpace(trem) +".*")
@@ -86,13 +86,6 @@ func GetHosts(c *gin.Context){
 		h.JSONResponse(c, http.StatusBadRequest, ecode, dt.Error)
 		return
 	}
-    /*
-	hosts := []map[string]interface{}{}
-	for _, host := range host {
-		hosts = append(hosts, map[string]interface{}{"id": host.ID, "name": host.Hostname, "ip": host.IP,
-		"status": host.Status})
-	}
-    */
 
 	h.JSONResponse(c, http.StatusOK, 0, "get hosts succeed", &CountResult{count, hosts})
 	return

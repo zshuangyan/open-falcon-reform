@@ -38,4 +38,5 @@ func Routes(r *gin.Engine) {
 	metricr.POST("bind/metric-host", BindMetricToHosts)
 	metricr.POST("unbind/metric-host", UnBindMetricToHosts)
 	metricr.GET("relation/metric-host", GetMetricBindHosts)
+	metricr.POST("/metric/exist", CheckMetricName)
 }
