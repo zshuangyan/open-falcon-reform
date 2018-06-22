@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"log"
 )
 
 
@@ -170,15 +171,23 @@ func DeleteMetric(c *gin.Context) {
 	return
 }
 
+type APICheckMetric struct {
+	Name        string `json:"name" binding:"required"`
+}
+
+
 func CheckMetricName(c *gin.Context) {
-	MetricName := c.Params.ByName("metric_name")
+	var inputs APICheckMetric
 	ecode := -1
-	if MetricName == "" {
-		h.JSONResponse(c, badstatus, ecode, "metric name is missing")
+	if err := c.Bind(&inputs); err != nil {
+		h.JSONResponse(c, badstatus, ecode, err)
 		return
 	}
+	sql := fmt.Sprintf("SELECT EXISTS(SELECT name FROM metric WHERE NAME=%s)", inputs.Name)
+	log.Println(sql)
 	var exist bool
-	dt := db.Falcon.Raw(fmt.Sprintf("SELECT EXISTS(SELECT name FROM metric WHERE NAME=%s)", MetricName)).Scan(&exist)
+	dt := db.Falcon.Raw(sql)
+	dt.Scan(&exist)
 	if dt.Error != nil {
 		h.JSONResponse(c, expecstatus, ecode, dt.Error)
 		return

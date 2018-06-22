@@ -22,7 +22,7 @@ import (
 	"strings"
 	"syscall"
 	log "github.com/Sirupsen/logrus"
-	cors "github.com/rs/cors/wrapper/gin"
+	//cors "github.com/rs/cors/wrapper/gin"
 	"github.com/gin-gonic/gin"
 	yaag_gin "github.com/masato25/yaag/gin"
 	"github.com/masato25/yaag/yaag"
@@ -78,12 +78,14 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	routes := gin.Default()
+	/*
 	routes.Use(cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods:   []string{"HEAD", "GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
 	}))
+	*/
 	if viper.GetBool("gen_doc") {
 		yaag.Init(&yaag.Config{
 			On:       true,
