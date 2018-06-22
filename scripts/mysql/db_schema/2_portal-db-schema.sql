@@ -19,6 +19,7 @@ CREATE TABLE host
   maintain_begin INT UNSIGNED NOT NULL DEFAULT 0,
   maintain_end   INT UNSIGNED NOT NULL DEFAULT 0,
   update_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  hb_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY idx_host_hostname (hostname)
 )
@@ -135,6 +136,7 @@ CREATE TABLE `grp_tpl` (
   DEFAULT CHARSET =utf8
   COLLATE =utf8_unicode_ci;
 
+DROP TABLE IF EXISTS plugin_dir;
 CREATE TABLE `plugin_dir` (
   `id`          INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `grp_id`      INT(10) UNSIGNED NOT NULL,

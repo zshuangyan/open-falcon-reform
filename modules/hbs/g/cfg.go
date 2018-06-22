@@ -26,6 +26,7 @@ type HttpConfig struct {
 	Listen  string `json:"listen"`
 }
 
+
 type GlobalConfig struct {
 	Debug     bool        `json:"debug"`
 	Hosts     string      `json:"hosts"`
@@ -35,6 +36,7 @@ type GlobalConfig struct {
 	Listen    string      `json:"listen"`
 	Trustable []string    `json:"trustable"`
 	Http      *HttpConfig `json:"http"`
+	UpdateAgentInterval int64 `json:"updateAgentInterval"`
 }
 
 var (

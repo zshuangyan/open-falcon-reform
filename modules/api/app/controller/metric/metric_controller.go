@@ -20,7 +20,7 @@ type APIMetricRegexpQueryInputs struct {
 
 func GetMetrics(c *gin.Context){
 	inputs := APIMetricRegexpQueryInputs{
-		//set default is 500
+		//set default is 50
 		Limit: 50,
 		Page:  1,
 	}
@@ -46,13 +46,14 @@ func GetMetrics(c *gin.Context){
 	}
 
 	var metrics []f.Metric
-	dt.Limit(inputs.Limit).Offset(offset).Scan(&metrics)
+	var count int
+	dt.Count(&count).Limit(inputs.Limit).Offset(offset).Scan(&metrics)
 	if dt.Error != nil {
 		h.JSONResponse(c, http.StatusBadRequest, ecode, dt.Error)
 		return
 	}
 
-	h.JSONResponse(c, http.StatusOK, 0, "get metrics succeed", metrics)
+	h.JSONResponse(c, http.StatusOK, 0, "get metrics succeed", &CountResult{count, metrics})
 	return
 }
 

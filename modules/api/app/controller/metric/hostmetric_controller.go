@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	h "github.com/open-falcon/falcon-plus/modules/api/app/helper"
 	f "github.com/open-falcon/falcon-plus/modules/api/app/model/falcon_portal"
+	"github.com/open-falcon/falcon-plus/common/model"
 	"net/http"
 	"strings"
 )
@@ -34,6 +35,10 @@ func BindMetricToHosts(c *gin.Context) {
 			errors = append(errors, fmt.Sprintf("host: %v not exist\n", host_id))
 		} else {
 			if dt := db.Falcon.Create(&f.HostMetric{MetricID: metric.ID, HostID: ahost.ID}); dt.Error != nil {
+				errors = append(errors, fmt.Sprintf("bound to host: %v failed for reason: %s\n", host_id, dt.Error.Error()))
+			}
+			if dt := db.Falcon.Create(&model.UserDefinedMetricHost{metric.Name, metric.Command,
+			metric.Step, metric.MetricType, metric.ValueType, ahost.ID}); dt.Error != nil {
 				errors = append(errors, fmt.Sprintf("bound to host: %v failed for reason: %s\n", host_id, dt.Error.Error()))
 			}
 		}
@@ -90,7 +95,7 @@ func UnBindMetricToHosts(c *gin.Context) {
 
 type APIMetricBindHosts struct {
 	MetricID int64  `json:"metric_id" form:"metric_id" binding:"required"`
-	Bind     bool   `json:"bind" form:"bind" binding:"required"`
+	Bind     bool   `json:"bind" form:"bind"`
 	Q        string `json:"q" form:"q"`
 	Limit    int    `json:"limit" form:"limit"`
 	Page     int    `json:"page" form:"page"`
@@ -102,6 +107,7 @@ type HostIDAndName struct {
 }
 
 func GetMetricBindHosts(c *gin.Context){
+	hbInterval := 5
 	inputs := APIMetricBindHosts{
 		Limit: 50,
 		Page:  1,
@@ -116,9 +122,9 @@ func GetMetricBindHosts(c *gin.Context){
 		h.JSONResponse(c, expecstatus, ecode, dt.Error)
 		return
 	}
-	var hosts []HostIDAndName
-	sql := "SELECT host.id, host.hostname FROM host WHERE host.id %s IN (SELECT host_id FROM host_metric WHERE host_metric.metric_id = %v)"
-	if inputs.Bind  {
+	sql := fmt.Sprintf("SELECT host.id, host.hostname, host.ip, CASE WHEN TIMESTAMPDIFF(minute, host.hb_at, NOW()) < %v THEN 1 ELSE 0 END AS status", hbInterval)
+	sql += " FROM host WHERE host.id %s IN (SELECT host_id FROM host_metric WHERE host_metric.metric_id = %v)"
+	if inputs.Bind {
 		sql = fmt.Sprintf(sql, "", metric.ID)
 	} else {
 		sql = fmt.Sprintf(sql, "NOT", metric.ID)
@@ -130,11 +136,15 @@ func GetMetricBindHosts(c *gin.Context){
 	if inputs.Page > 1 {
 		offset = (inputs.Page - 1) * inputs.Limit
 	}
-	sql += fmt.Sprintf(" LIMIT %v OFFSET %v", inputs.Limit, offset)
-	if dt := db.Falcon.Raw(sql).Scan(&hosts); dt.Error != nil {
+	var hosts []f.Host
+	var count int
+	dt := db.Falcon.Raw(sql)
+	dt.Count(&count)
+	dt.Limit(inputs.Limit).Offset(offset).Scan(&hosts)
+	if dt.Error != nil {
 		h.JSONResponse(c, expecstatus, ecode, dt.Error)
 		return
 	}
-	h.JSONResponse(c, http.StatusOK, 0, fmt.Sprintf("succeed get hosts bound to metric:%v", metric.ID), hosts)
+	h.JSONResponse(c, http.StatusOK, 0, fmt.Sprintf("succeed get hosts bound to metric:%v", metric.ID), &CountResult{count, hosts})
 	return
 }

@@ -26,3 +26,16 @@ func (this *UserDefinedMetricsResponse) String() string {
 		this.Metrics,
 	)
 }
+
+type UserDefinedMetricHost struct{
+	Name       string   `json:"name" gorm:"column:name"`
+	Command    string   `json:"command" gorm:"column:command"`
+	Step       int      `json:"step" gorm:"column:step"`
+	MetricType string   `json:"metric_type" gorm:"column:metric_type"`
+	ValueType  string   `json:"value_type" gorm:"column:value_type"`
+	HostID     int64    `json:"host_id" gorm:"column:host_id"`
+}
+
+func (this UserDefinedMetricHost) TableName() string {
+	return "user_defined_metric"
+}

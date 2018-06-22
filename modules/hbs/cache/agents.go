@@ -23,6 +23,7 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/hbs/db"
 	"sync"
 	"time"
+	"github.com/open-falcon/falcon-plus/modules/hbs/g"
 )
 
 type SafeAgents struct {
@@ -51,7 +52,12 @@ func (this *SafeAgents) Put(req *model.AgentReportRequest) {
 		this.Lock()
 		this.M[req.Hostname] = val
 		this.Unlock()
+	} else {
+		this.Lock()
+		this.M[req.Hostname].LastUpdate = val.LastUpdate
+		this.Unlock()
 	}
+
 }
 
 func (this *SafeAgents) Get(hostname string) (*model.AgentUpdateInfo, bool) {
@@ -104,3 +110,25 @@ func deleteStaleAgents() {
 		}
 	}
 }
+
+func HBSAgents() {
+	for {
+		hbsAgents()
+		d := time.Duration(g.Config().UpdateAgentInterval) * time.Minute
+		time.Sleep(d)
+	}
+}
+
+func hbsAgents() {
+	keys := Agents.Keys()
+	count := len(keys)
+	if count == 0 {
+		return
+	}
+	for i:= 0; i< count; i++ {
+		curr, _ := Agents.Get(keys[i])
+		db.HBSAgent(curr)
+	}
+}
+
+

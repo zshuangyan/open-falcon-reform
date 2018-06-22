@@ -51,3 +51,13 @@ func UpdateAgent(agentInfo *model.AgentUpdateInfo) {
 	}
 
 }
+
+func HBSAgent(agentInfo *model.AgentUpdateInfo) {
+	sql := fmt.Sprintf("UPDATE host SET hb_at=FROM_UNIXTIME(%v) WHERE hostname='%s'",
+		agentInfo.LastUpdate, agentInfo.ReportRequest.Hostname)
+	_, err := DB.Exec(sql)
+	if err != nil {
+		log.Println("exec", sql, "fail", err)
+	}
+	log.Println("exec", sql, "succeed")
+}

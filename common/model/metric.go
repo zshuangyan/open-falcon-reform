@@ -30,6 +30,22 @@ type MetricValue struct {
 	Timestamp int64       `json:"timestamp"`
 }
 
+type MetricReportRequest struct {
+	HostName    string `json:"hostname"`
+	Name        string `json:"name"`
+	Command     string `json:"command"`
+	Step        int    `json:"step"`
+	MetricType  string `json:"metric_type"`
+	ValueType   string `json:"value_type"`
+}
+
+type Metric struct {
+	Name        string `json:"name"`
+	Command     string `json:"command"`
+	Step        int    `json:"step"`
+	MetricType  string `json:"metric_type"`
+}
+
 func (this *MetricValue) String() string {
 	return fmt.Sprintf(
 		"<Endpoint:%s, Metric:%s, Type:%s, Tags:%s, Step:%d, Time:%d, Value:%v>",

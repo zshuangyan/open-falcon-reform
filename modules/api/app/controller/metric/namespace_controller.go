@@ -2,7 +2,6 @@ package metric
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"fmt"
 	h "github.com/open-falcon/falcon-plus/modules/api/app/helper"
 	f "github.com/open-falcon/falcon-plus/modules/api/app/model/falcon_portal"
@@ -11,38 +10,42 @@ import (
 	"strconv"
 )
 
+type APINameSpaceRegexpQueryInputs struct {
+	Q         string `json:"q" form:"q"`
+	Limit     int    `json:"limit" form:"limit"`
+	Page      int    `json:"page" form:"page"`
+}
+
 func GetNameSpaces(c *gin.Context) {
-	var (
-		limit int
-		page  int
-		err   error
-	)
-	pageTmp := c.DefaultQuery("page", "")
-	limitTmp := c.DefaultQuery("limit", "")
-	ecode := -1
-	q := strings.TrimSpace(c.Query("q"))
-	if q == ""{
-		q = ".+"
-	} else {
-		q = ".*" + q + ".*"
+	inputs := APINameSpaceRegexpQueryInputs{
+		//set default is 50
+		Limit: 50,
+		Page:  1,
 	}
-	page, limit, err = h.PageParser(pageTmp, limitTmp)
-	if err != nil {
-		h.JSONResponse(c, badstatus, ecode, err.Error())
+	ecode := -1
+	if err := c.Bind(&inputs); err != nil {
+		h.JSONResponse(c, badstatus, ecode, err)
 		return
 	}
-	var namespaces []f.NameSpace
-	var dt *gorm.DB
-	if limit != -1 && page != -1 {
-		dt = db.Falcon.Raw(fmt.Sprintf("SELECT * from namespace where name regexp '%s' limit %d,%d", q, page, limit)).Scan(&namespaces)
-	} else {
-		dt = db.Falcon.Table("namespace").Where("name regexp ?", q).Find(&namespaces)
+
+	offset := 0
+	if inputs.Page > 1 {
+		offset = (inputs.Page - 1) * inputs.Limit
 	}
+	dt := db.Falcon.Table("namespace").Select("*")
+	q := strings.TrimSpace(c.Query("q"))
+	if q != "" {
+		q = ".*" + q + ".*"
+		dt = dt.Where("name regexp ?", q)
+	}
+	var namespaces []f.NameSpace
+    var count int
+    dt.Count(&count).Limit(inputs.Limit).Offset(offset).Scan(&namespaces)
 	if dt.Error != nil {
 		h.JSONResponse(c, expecstatus, ecode, dt.Error)
 		return
 	}
-	h.JSONResponse(c, http.StatusOK, 0, "get namespaces succeed", namespaces)
+	h.JSONResponse(c, http.StatusOK, 0, "get namespaces succeed", &CountResult{count, namespaces})
 	return
 }
 

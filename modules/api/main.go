@@ -30,7 +30,6 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/api/config"
 	"github.com/open-falcon/falcon-plus/modules/api/graph"
 	"github.com/spf13/viper"
-	"github.com/cors"
 )
 
 func initGraph() {
@@ -77,15 +76,6 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	routes := gin.Default()
-	// CORS for https://foo.com and https://github.com origins, allowing:
-	// - PUT and PATCH methods
-	// - Origin header
-	// - Credentials share
-	// - Preflight requests cached for 12 hours
-	routes.Use(cors.New(cors.Config{
-		AllowAllOrigins:  true,
-		AllowCredentials: true,
-	}))
 	if viper.GetBool("gen_doc") {
 		yaag.Init(&yaag.Config{
 			On:       true,
