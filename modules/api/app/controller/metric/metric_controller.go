@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"log"
 )
 
 
@@ -175,6 +174,10 @@ type APICheckMetric struct {
 	Name        string `json:"name" binding:"required"`
 }
 
+type BoolResult struct {
+	Exist       int    `json:"exist" gorm:"column:exist"`
+}
+
 
 func CheckMetricName(c *gin.Context) {
 	var inputs APICheckMetric
@@ -183,11 +186,9 @@ func CheckMetricName(c *gin.Context) {
 		h.JSONResponse(c, badstatus, ecode, err)
 		return
 	}
-	sql := fmt.Sprintf("SELECT EXISTS(SELECT name FROM metric WHERE NAME=%s)", inputs.Name)
-	log.Println(sql)
-	var exist bool
-	dt := db.Falcon.Raw(sql)
-	dt.Scan(&exist)
+	sql := fmt.Sprintf("SELECT EXISTS(SELECT name FROM metric WHERE name='%s') AS exist", inputs.Name)
+	var exist BoolResult
+	dt := db.Falcon.Raw(sql).Scan(&exist)
 	if dt.Error != nil {
 		h.JSONResponse(c, expecstatus, ecode, dt.Error)
 		return
