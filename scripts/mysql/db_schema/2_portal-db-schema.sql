@@ -1,4 +1,5 @@
-CREATE DATABASE falcon_portal
+DROP DATABASE IF EXISTS falcon_portal;
+create database falcon_portal
   DEFAULT CHARACTER SET utf8
   DEFAULT COLLATE utf8_general_ci;
 USE falcon_portal;
@@ -225,6 +226,81 @@ CREATE TABLE alert_link
   create_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY alert_path(path)
+)
+  ENGINE =InnoDB
+  DEFAULT CHARSET =utf8
+  COLLATE =utf8_unicode_ci;
+
+USE falcon_portal;
+SET NAMES utf8;
+
+DROP TABLE IF EXISTS metric;
+CREATE TABLE metric
+(
+  id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name          VARCHAR(255) NOT NULL,
+  alias         VARCHAR(255) NOT NULL DEFAULT '',
+  command       VARCHAR(500)  NOT NULL DEFAULT '',
+  step          INT UNSIGNED NOT NULL DEFAULT 60 COMMENT 'in second',
+  metric_type   VARCHAR(10) NOT NULL DEFAULT 'GAUGE' COMMENT 'GAUGE|COUNTER|DERIVE',
+  value_type    VARCHAR(10) NOT NULL DEFAULT 'int' COMMENT 'int|float',
+  unit          VARCHAR(50) NOT NULL DEFAULT '',
+  built_in      BOOLEAN NOT NULL DEFAULT TRUE,
+  PRIMARY       KEY (id),
+  UNIQUE (name)
+)
+  ENGINE =InnoDB
+  DEFAULT CHARSET =utf8
+  COLLATE =utf8_unicode_ci;
+
+
+DROP TABLE IF EXISTS namespace;
+CREATE TABLE namespace
+(
+  id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name          VARCHAR(255) NOT NULL,
+  PRIMARY       KEY (id),
+  UNIQUE (name)
+)
+  ENGINE =InnoDB
+  DEFAULT CHARSET =utf8
+  COLLATE =utf8_unicode_ci;
+
+DROP TABLE IF EXISTS namespace_metric;
+CREATE TABLE namespace_metric
+(
+  namespace_id  INT UNSIGNED NOT NULL,
+  metric_id INT UNSIGNED NOT NULL,
+  UNIQUE KEY id_namespace_metric (namespace_id, metric_id)
+)
+  ENGINE =InnoDB
+  DEFAULT CHARSET =utf8
+  COLLATE =utf8_unicode_ci;
+
+DROP TABLE IF EXISTS host_metric;
+CREATE TABLE host_metric
+(
+  host_id  INT UNSIGNED NOT NULL,
+  metric_id INT UNSIGNED NOT NULL,
+  UNIQUE KEY id_host_metric (host_id, metric_id)
+)
+  ENGINE =InnoDB
+  DEFAULT CHARSET =utf8
+  COLLATE =utf8_unicode_ci;
+
+
+DROP TABLE IF EXISTS user_defined_metric;
+CREATE TABLE user_defined_metric
+(
+  name          VARCHAR(255) NOT NULL,
+  command       VARCHAR(500)  NOT NULL,
+  step          INT UNSIGNED NOT NULL,
+  metric_type   VARCHAR(10) NOT NULL,
+  value_type    VARCHAR(10) NOT NULL,
+  host_id       INT UNSIGNED  NOT NULL,
+  status        BOOLEAN NOT NULL DEFAULT FALSE,
+  PRIMARY       KEY (name, host_id),
+  UNIQUE KEY metric_host (name, host_id)
 )
   ENGINE =InnoDB
   DEFAULT CHARSET =utf8

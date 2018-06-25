@@ -81,10 +81,11 @@ func SyncUserDefinedMetrics() {
 		return
 	}
 
-	go syncUserDefinedMetrics()
+	go syncAddedMetrics()
+	go syncRemovedMetrics()
 }
 
-func syncUserDefinedMetrics() {
+func syncAddedMetrics() {
 
 	duration := time.Duration(g.Config().Heartbeat.Interval) * time.Second
 
@@ -100,8 +101,8 @@ func syncUserDefinedMetrics() {
 			Hostname: hostname,
 		}
 
-		var resp model.UserDefinedMetricsResponse
-		err = g.HbsClient.Call("Agent.UserDefinedMetrics", req, &resp)
+		var resp model.AddedMetricsResponse
+		err = g.HbsClient.Call("Agent.AddedMetrics", req, &resp)
 		if err != nil {
 			log.Println("ERROR:", err)
 			continue
@@ -117,3 +118,38 @@ func syncUserDefinedMetrics() {
 		}
 	}
 }
+
+
+func syncRemovedMetrics() {
+
+	duration := time.Duration(g.Config().Heartbeat.Interval) * time.Second
+
+	for {
+		time.Sleep(duration)
+
+		hostname, err := g.Hostname()
+		if err != nil {
+			continue
+		}
+
+		req := model.AgentHeartbeatRequest{
+			Hostname: hostname,
+		}
+
+		var resp model.RemovedMetricsResponse
+		err = g.HbsClient.Call("Agent.RemovedMetrics", req, &resp)
+		if err != nil {
+			log.Println("ERROR:", err)
+			continue
+		}
+
+		if g.Config().Debug {
+			log.Println(&resp)
+		}
+
+		for _, metric := range resp.Metrics {
+			ticktock.Cancel(metric.Name)
+		}
+	}
+}
+

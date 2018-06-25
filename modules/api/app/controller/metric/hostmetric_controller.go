@@ -9,6 +9,7 @@ import (
 	"github.com/open-falcon/falcon-plus/common/model"
 	"net/http"
 	"strings"
+	"log"
 )
 
 type APIBindMetricToHosts struct {
@@ -34,13 +35,18 @@ func BindMetricToHosts(c *gin.Context) {
 		if dt:= db.Falcon.Find(&ahost); dt.Error != nil{
 			errors = append(errors, fmt.Sprintf("host: %v not exist\n", host_id))
 		} else {
-			if dt := db.Falcon.Create(&f.HostMetric{MetricID: metric.ID, HostID: ahost.ID}); dt.Error != nil {
+			dt := db.Falcon.Create(&f.HostMetric{MetricID: metric.ID, HostID: ahost.ID})
+			if dt.Error != nil {
 				errors = append(errors, fmt.Sprintf("bound to host: %v failed for reason: %s\n", host_id, dt.Error.Error()))
-			}
-			if dt := db.Falcon.Create(&model.UserDefinedMetricHost{metric.Name, metric.Command,
-			metric.Step, metric.MetricType, metric.ValueType, ahost.ID}); dt.Error != nil {
-				errors = append(errors, fmt.Sprintf("bound to host: %v failed for reason: %s\n", host_id, dt.Error.Error()))
-			}
+			} else {
+				log.Println("get into create user_defined_metric")
+				dt := db.Falcon.Exec("insert into user_defined_metric(name, command, step, metric_type, " +
+					"value_type, host_id) values (?, ?, ?, ?, ?, ?) on duplicate key update status=?",
+					metric.Name, metric.Command, metric.Step, metric.MetricType, metric.ValueType, ahost.ID, 0);
+				if dt.Error != nil {
+					errors = append(errors, fmt.Sprintf("bound to host: %v failed for reason: %s\n", host_id, dt.Error.Error()))
+					}
+				}
 		}
 	}
 	var error_msg string
@@ -76,6 +82,9 @@ func UnBindMetricToHosts(c *gin.Context) {
 		} else {
 			if dt := db.Falcon.Where("metric_id = ? AND host_id = ?", inputs.MetricID, host_id).Delete(&f.HostMetric{}); dt.Error != nil {
 				errors = append(errors, fmt.Sprintf("host: %v unbound failed for reason: %s\n", host_id, dt.Error.Error()))
+			} else if dt := db.Falcon.Model(&model.UserDefinedMetricHost{}).Where("name = ?", metric.Name).Where(
+				"host_id = ?", ahost.ID).Update("status", 2); dt.Error != nil {
+				errors = append(errors, fmt.Sprintf("bound to host: %v failed for reason: %s\n", host_id, dt.Error.Error()))
 			}
 		}
 
@@ -107,6 +116,10 @@ type HostIDAndName struct {
 	Name string   `json:"name" gorm:"column:hostname"`
 }
 
+type CountStruct struct {
+	Count       int    `json:"count" gorm:"column:count"`
+}
+
 func GetMetricBindHosts(c *gin.Context){
 	hbInterval := 5
 	inputs := APIMetricBindHosts{
@@ -125,7 +138,7 @@ func GetMetricBindHosts(c *gin.Context){
 		return
 	}
 	sql := "SELECT host.id, host.hostname, host.ip, date_format(hb_at, '%Y-%m-%d %T') as updated, " +
-		fmt.Sprintf("CASE WHEN TIMESTAMPDIFF(minute, host.hb_at, NOW()) < %v THEN 1 ELSE 0 END AS status", hbInterval)
+		fmt.Sprintf("CASE WHEN TIMESTAMPDIFF(minute, host.hb_at, NOW()) <= %v THEN 1 ELSE 0 END AS status", hbInterval)
 	if inputs.Bind {
 		sql += fmt.Sprintf(" FROM host WHERE host.id %s IN (SELECT host_id FROM host_metric WHERE host_metric.metric_id = %v)", "", metric.ID)
 	} else {
@@ -144,14 +157,18 @@ func GetMetricBindHosts(c *gin.Context){
 		offset = (inputs.Page - 1) * inputs.Limit
 	}
 	var hosts []f.Host
-	var count int
-	dt := db.Falcon.Raw(sql)
-	dt.Count(&count)
-	dt.Limit(inputs.Limit).Offset(offset).Scan(&hosts)
+	var count CountStruct
+	dt := db.Falcon.Raw(sql).Limit(inputs.Limit).Offset(offset).Scan(&hosts)
 	if dt.Error != nil {
 		h.JSONResponse(c, expecstatus, ecode, dt.Error)
 		return
 	}
-	h.JSONResponse(c, http.StatusOK, 0, fmt.Sprintf("succeed get hosts bound to metric:%v", metric.ID), &CountResult{count, hosts})
+	countSql := "SELECT count(*) as count " + sql[strings.Index(sql, "FROM"):]
+	dt = db.Falcon.Raw(countSql).Scan(&count)
+	if dt.Error != nil {
+		h.JSONResponse(c, expecstatus, ecode, dt.Error)
+		return
+	}
+	h.JSONResponse(c, http.StatusOK, 0, fmt.Sprintf("succeed get hosts bound to metric:%v", metric.ID), &CountResult{count.Count, hosts})
 	return
 }

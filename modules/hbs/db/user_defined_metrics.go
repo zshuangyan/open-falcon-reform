@@ -20,10 +20,10 @@ import (
 	"log"
 )
 
-func QueryUserDefinedMetrics(hid int) ([]*model.UserDefinedMetric, error) {
-	var m []*model.UserDefinedMetric
+func QueryAddedMetrics(hid int) ([]*model.AddedMetric, error) {
+	var m []*model.AddedMetric
 
-	sql := fmt.Sprintf("select id, name, command, step, metric_type from user_defined_metric where host_id=%v and status=0", hid)
+	sql := fmt.Sprintf("select name, command, step, metric_type from user_defined_metric where host_id=%v and status=0", hid)
 	rows, err := DB.Query(sql)
 	if err != nil {
 		log.Println("ERROR:", err)
@@ -33,22 +33,21 @@ func QueryUserDefinedMetrics(hid int) ([]*model.UserDefinedMetric, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var (
-			id int
 			name  string
 			command string
 			step int64
 			metric_type string
 		)
 
-		err = rows.Scan(&id, &name, &command, &step, &metric_type)
+		err = rows.Scan(&name, &command, &step, &metric_type)
 		if err != nil {
 			log.Println("ERROR:", err)
 			continue
 		}
 
-		m = append(m, &model.UserDefinedMetric{name, command, step, metric_type})
+		m = append(m, &model.AddedMetric{name, command, step, metric_type})
 
-		updateSql := fmt.Sprintf("update user_defined_metric set status=1 where id=%v", id)
+		updateSql := fmt.Sprintf("update user_defined_metric set status=1 where name='%s' and host_id=%v", name, hid)
 		_, err := DB.Query(updateSql)
 		if err != nil {
 			log.Println("ERROR:", err)
@@ -57,3 +56,35 @@ func QueryUserDefinedMetrics(hid int) ([]*model.UserDefinedMetric, error) {
 
 	return m, nil
 }
+
+func QueryRemovedMetrics(hid int) ([]*model.RemovedMetric, error) {
+	var m []*model.RemovedMetric
+	sql := fmt.Sprintf("select name from user_defined_metric where host_id=%v and status=2", hid)
+	rows, err := DB.Query(sql)
+	if err != nil {
+		log.Println("ERROR:", err)
+		return m, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var name string
+
+		err = rows.Scan(&name)
+		if err != nil {
+			log.Println("ERROR:", err)
+			continue
+		}
+
+		m = append(m, &model.RemovedMetric{name})
+
+		updateSql := fmt.Sprintf("update user_defined_metric set status=3 where name='%s' and host_id=%v", name, hid)
+		_, err := DB.Query(updateSql)
+		if err != nil {
+			log.Println("ERROR:", err)
+		}
+	}
+
+	return m, nil
+}
+

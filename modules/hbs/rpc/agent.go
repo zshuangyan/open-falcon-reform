@@ -37,12 +37,27 @@ func (t *Agent) MinePlugins(args model.AgentHeartbeatRequest, reply *model.Agent
 }
 
 
-func (t *Agent) UserDefinedMetrics(args model.AgentHeartbeatRequest, reply *model.UserDefinedMetricsResponse) error {
+func (t *Agent) AddedMetrics(args model.AgentHeartbeatRequest, reply *model.AddedMetricsResponse) error {
 	if args.Hostname == "" {
 		return nil
 	}
 
-	metrics, err := cache.GetUserDefinedMetrics(args.Hostname)
+	metrics, err := cache.GetAddedMetrics(args.Hostname)
+	if err != nil {
+		return nil
+	}
+
+	reply.Metrics = metrics
+
+	return nil
+}
+
+func (t *Agent) RemovedMetrics(args model.AgentHeartbeatRequest, reply *model.RemovedMetricsResponse) error {
+	if args.Hostname == "" {
+		return nil
+	}
+
+	metrics, err := cache.GetRemovedMetrics(args.Hostname)
 	if err != nil {
 		return nil
 	}

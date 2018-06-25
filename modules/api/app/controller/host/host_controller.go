@@ -49,24 +49,19 @@ func GetHosts(c *gin.Context){
 		return
 	}
 
-	if inputs.Status == 0 {
-		h.JSONResponse(c, http.StatusOK, 0, "get hosts succeed", []map[string]interface{}{})
-		return
-	}
-
 	qs := []string{}
 	if inputs.Q != "" {
 		qs = strings.Split(inputs.Q, " ")
 	}
 
-	var offset int = 0
+	var offset = 0
 	if inputs.Page > 1 {
 		offset = (inputs.Page - 1) * inputs.Limit
 	}
 
 	var dt *gorm.DB
 	selectSql := "id, hostname, ip, date_format(hb_at, '%Y-%m-%d %T') as updated, " +
-		fmt.Sprintf("CASE WHEN TIMESTAMPDIFF(minute, hb_at, NOW()) < %v THEN 1 ELSE 0 END AS status", hbInterval)
+		fmt.Sprintf("CASE WHEN TIMESTAMPDIFF(minute, hb_at, NOW()) <= %v THEN 1 ELSE 0 END AS status", hbInterval)
 	dt = db.Falcon.Table("host").Select(selectSql)
 	if len(qs) != 0 {
 		for _, trem := range qs {

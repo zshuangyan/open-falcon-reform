@@ -20,11 +20,20 @@ import (
 )
 
 
-func GetUserDefinedMetrics(hostname string) ([]*model.UserDefinedMetric, error) {
-	ret := []*model.UserDefinedMetric{}
+func GetAddedMetrics(hostname string) ([]*model.AddedMetric, error) {
+	ret := []*model.AddedMetric{}
 	hid, exists := HostMap.GetID(hostname)
 	if !exists {
 		return ret, nil
 	}
-	return db.QueryUserDefinedMetrics(hid)
+	return db.QueryAddedMetrics(hid)
+}
+
+func GetRemovedMetrics(hostname string) ([]*model.RemovedMetric, error) {
+	ret := []*model.RemovedMetric{}
+	hid, exists := HostMap.GetID(hostname)
+	if !exists {
+		return ret, nil
+	}
+	return db.QueryRemovedMetrics(hid)
 }
