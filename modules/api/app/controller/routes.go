@@ -30,6 +30,7 @@ import (
 	"github.com/open-falcon/falcon-plus/modules/api/app/controller/uic"
 	"github.com/open-falcon/falcon-plus/modules/api/app/utils"
 	"github.com/open-falcon/falcon-plus/modules/api/app/controller/metric"
+	"github.com/open-falcon/falcon-plus/modules/api/app/controller/install"
 )
 
 func StartGin(port string, r *gin.Engine) {
@@ -48,5 +49,6 @@ func StartGin(port string, r *gin.Engine) {
 	dashboard_graph.Routes(r)
 	dashboard_screen.Routes(r)
 	alarm.Routes(r)
+	install.Routes(r)
 	r.Run(port)
 }

@@ -1,0 +1,43 @@
+{
+    "debug": true,
+    "hostname": "",
+    "ip": "",
+    "plugin": {
+        "enabled": true,
+        "dir": "./plugin",
+        "git": "https://gitlab.gridsum.com/wangyiqi/falcon-plugin.git",
+        "logs": "./logs"
+    },
+    "heartbeat": {
+        "enabled": true,
+        "addr": "10.201.81.154:6030",
+        "interval": 60,
+        "timeout": 1000
+    },
+    "transfer": {
+        "enabled": true,
+        "addrs": [
+            "10.203.40.143:8433",
+            "10.200.200.71:8433",
+            "10.201.81.120:8433",
+            "10.202.80.139:8433"
+        ],
+        "interval": 30,
+        "timeout": 1000
+    },
+    "http": {
+        "enabled": true,
+        "listen": ":1988",
+        "backdoor": false
+    },
+    "collector": {
+        "ifacePrefix": ["eth", "em"],
+        "mountPoint": []
+    },
+    "default_tags": {
+    },
+    "ignore": {
+
+    }
+}
+
