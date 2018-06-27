@@ -39,7 +39,9 @@ func ExecCommand (c string) (int, error) {
 		log.Println("Command finished with error:", err)
 		return -1, err
 	}
-	data, err := strconv.Atoi(strings.TrimSpace(string(result[:])))
+	command := strings.TrimSpace(string(result[:]))
+	log.Println("command is:", command)
+	data, err := strconv.Atoi(command)
 	if err != nil {
 		log.Println("Command finished with error:", err)
 		return -1, err
@@ -51,7 +53,7 @@ func (m *UserDefinedMetric) Run() error{
 	mvs := []*model.MetricValue{}
 	mv := new(model.MetricValue)
 	mv.Metric = m.Name
-	mv.Step = m.Step * 60
+	mv.Step = m.Step
 	mv.Type = m.MetricType
 	mv.Timestamp = time.Now().Unix()
 	log.Printf("\nUserDefinedMetric: %v\nCommand: %v\nStep: %v\n", m.Name, m.Command, m.Step)
@@ -114,7 +116,7 @@ func syncAddedMetrics() {
 
 		for _, metric := range resp.Metrics {
 			ticktock.Schedule(metric.Name, &UserDefinedMetric{metric.Name, metric.Command,
-			metric.Step, metric.MetricType}, &t.When{Every: t.Every(1).Minutes()})
+			metric.Step, metric.MetricType}, &t.When{Every: t.Every(int(metric.Step / 60)).Minutes()})
 		}
 	}
 }

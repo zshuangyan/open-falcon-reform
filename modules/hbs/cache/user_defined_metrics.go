@@ -22,7 +22,11 @@ import (
 
 func GetAddedMetrics(hostname string) ([]*model.AddedMetric, error) {
 	ret := []*model.AddedMetric{}
-	hid, exists := HostMap.GetID(hostname)
+	hosts, err := db.QueryHosts()
+	if err != nil {
+		return ret, nil
+	}
+	hid, exists := hosts[hostname]
 	if !exists {
 		return ret, nil
 	}
@@ -31,7 +35,11 @@ func GetAddedMetrics(hostname string) ([]*model.AddedMetric, error) {
 
 func GetRemovedMetrics(hostname string) ([]*model.RemovedMetric, error) {
 	ret := []*model.RemovedMetric{}
-	hid, exists := HostMap.GetID(hostname)
+	hosts, err := db.QueryHosts()
+	if err != nil {
+		return ret, nil
+	}
+	hid, exists := hosts[hostname]
 	if !exists {
 		return ret, nil
 	}

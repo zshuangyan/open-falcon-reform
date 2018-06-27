@@ -68,7 +68,7 @@ func GetMetricNameAndAlia(c *gin.Context) {
 		h.JSONR(c, expecstatus, ecode, dt.Error)
 		return
 	}
-	h.JSONR(c, http.StatusOK, 0, "get metric alias succedd", results)
+	h.JSONResponse(c, http.StatusOK, 0, "get metric alias succeed", results)
 	return
 }
 
