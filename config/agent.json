@@ -34,21 +34,5 @@
     "default_tags": {
     },
     "ignore": {
-        "cpu.busy": true,
-        "df.bytes.free": true,
-        "df.bytes.total": true,
-        "df.bytes.used": true,
-        "df.bytes.used.percent": true,
-        "df.inodes.total": true,
-        "df.inodes.free": true,
-        "df.inodes.used": true,
-        "df.inodes.used.percent": true,
-        "mem.memtotal": true,
-        "mem.memused": true,
-        "mem.memused.percent": true,
-        "mem.memfree": true,
-        "mem.swaptotal": true,
-        "mem.swapused": true,
-        "mem.swapfree": true
     }
 }
