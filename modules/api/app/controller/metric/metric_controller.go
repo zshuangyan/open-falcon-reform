@@ -16,13 +16,14 @@ type APIMetricRegexpQueryInputs struct {
 	Limit     int    `json:"limit" form:"limit"`
 	Page      int    `json:"page" form:"page"`
 	NMSID     int64  `json:"namespace_id" form:"namespace_id"`
+	BuiltIn   int    `json:"built_in" form:"built_in"`
 }
 
 func GetMetrics(c *gin.Context){
 	inputs := APIMetricRegexpQueryInputs{
-		//set default is 50
 		Limit: 50,
 		Page:  1,
+		BuiltIn: 2,
 	}
 	ecode := -1
 	if err := c.Bind(&inputs); err != nil {
@@ -39,6 +40,9 @@ func GetMetrics(c *gin.Context){
 	dt = db.Falcon.Table("metric").Select("*")
 	if inputs.NMSID != 0 {
 		dt = dt.Joins("JOIN namespace_metric ON namespace_metric.metric_id = metric.id").Where("namespace_metric.namespace_id = ?", inputs.NMSID)
+	}
+	if inputs.BuiltIn != 2 {
+		dt = dt.Where("metric.built_in = ?", inputs.BuiltIn)
 	}
 	if inputs.Q != "" {
 		q := ".*" + inputs.Q + ".*"
